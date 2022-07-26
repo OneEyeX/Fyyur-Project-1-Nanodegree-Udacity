@@ -1,0 +1,92 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Show Search{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Fyyur Search!</h1>
+</div>
+<p class="lead"> Show Search </p>
+{#    Todo implement show search frontend #}
+<br>
+<div class="row">
+    <div class="col-md-5">
+        <h3>Number of search results for "{{ search_term }}": {{ shows.count }}</h3>
+    </div>
+    <div class="col-md-7">
+
+        {% if (request.endpoint == 'shows') or
+(request.endpoint == 'search_show') or
+(request.endpoint == 'search_shows') %}
+        <form class="search" method="post" action="/shows/search">
+            <div class="nav nav-pills">
+                <div class="col-sm-8">
+                    <input class="form-control input-lg" type="search" name="search_term" placeholder="Find a show"
+                        aria-label="Search" required>
+                </div>
+                <div class=" col-sm-2 ">
+                    <button class="button btn-warning btn btn-lg"> Search for Shows</button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+<br>
+
+<hr>
+<br>
+<!-- <div class="row shows">
+
+    {%for show in shows.data %}
+    <div class="col-sm-4">
+        <div class="tile tile-show">
+            <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+            <h4>{{ show.start_time|datetime('full') }}</h4>
+            <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
+            <p>playing at</p>
+            <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+        </div>
+    </div>
+    {% endfor %}
+</div> -->
+
+{% if shows.new_shows %}
+<section>
+    <h2 class="lead">New Shows : ( {{shows.new_shows_count}} results )</h2>
+    <div class="row">
+        {%for show in shows.new_shows %}
+        <div class="col-sm-4">
+            <div class="tile tile-show">
+                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+                <h4>{{ show.start_time|datetime('full') }}</h4>
+                <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
+                <p>playing at</p>
+                <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if shows.past_shows %}
+<section>
+    <h2 class="lead">Past Shows : ( {{shows.past_shows_count}} results )</h2>
+    <div class="row">
+        {%for show in shows.past_shows %}
+        <div class="col-sm-4">
+            <div class="tile tile-show">
+                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+                <h4>{{ show.start_time|datetime('full') }}</h4>
+                <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
+                <p>playing at</p>
+                <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+
+{% endblock %}
