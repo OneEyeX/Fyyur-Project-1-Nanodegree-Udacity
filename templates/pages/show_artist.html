@@ -48,7 +48,10 @@
 
 <!-- added for Challenge 3 -->
 <section>
-	<h2 class="monospace"> {{artist.songs_count}}
+	<h2 class="monospace">
+		{% if artist.songs_count %}
+		{{artist.songs_count}}
+		{% endif %}
 		{% if artist.songs_count == 1 %}Song{% else %}Songs{% endif %}
 	</h2>
 	{% if artist.songs%}
@@ -56,47 +59,46 @@
 		{%for song in artist.songs %}
 		<div class="col-sm-4">
 			<div class="tile tile-show">
-				<a href="{{ url_for('delete_song', song_id=song.song_id) }}">
-					<button class="btn btn-danger ">
-						Delete Song
-					</button>
-				</a>
-				<hr>
-				<div class="text-left">
+				<div class="">
 
+					<a class="btn btn-danger btn-lg " href="{{ url_for('delete_song', song_id=song.song_id) }}">
+						Delete Song
+					</a>
+					<hr>
+				</div>
+				<div class="text-left">
 					<h4>
 						<strong>
 							Song name :
 						</strong>
 						{{ song.song_name }}
 					</h4>
-					<h4>
+					<h5>
 						<strong>
 							Duration :
 						</strong>
 						{{ song.duration }} minutes
-					</h4>
+					</h5>
 
 					{% if song.album_name %}
-					<h4>
+					<h5>
 						<strong>
 							Album :
 						</strong>
 						{{ song.album_name }}
-					</h4>
+					</h5>
 					{% endif %}
-					<h4>
+					<h5>
 						<strong>
 							Released date :
 						</strong>
 						{{ song.release_date|datetime('d/M/Y') }}
-					</h4>
+					</h5>
 				</div>
 				{% if song.link %}
-				<a href="{{song.link}}" target="_blank">
-					<strong>
-						Link to song
-					</strong>
+				<br>
+				<a class="btn btn-success btn-lg btn-block " href="{{song.link}}" target="_blank">
+					Link to song
 				</a>
 				{% endif %}
 			</div>
@@ -114,10 +116,30 @@
 	<div class="row">
 		{%for show in artist.upcoming_shows %}
 		<div class="col-sm-4">
-			<div class="tile tile-show">
+
+			<!-- old style -->
+			<!-- <div class="tile tile-show">
 				<img src="{{ show.venue_image_link }}" alt="Show Venue Image" />
 				<h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
 				<h6>{{ show.start_time|datetime('full') }}</h6>
+			</div> -->
+
+			<!-- new style -->
+			<div class="tile tile-show">
+				<img src="{{ show.venue_image_link }}" alt="Show Venue Image" />
+				<div class="text-left">
+					<h4>
+						<strong>Venue : </strong>
+						<a href="/venues/{{ show.venue_id }}">
+							{{ show.venue_name }}
+						</a>
+					</h4>
+					<h5>
+						<strong>
+							Date :
+						</strong>
+						{{ show.start_time|datetime('full') }}</h5>
+				</div>
 			</div>
 		</div>
 		{% endfor %}
@@ -131,10 +153,31 @@
 	<div class="row">
 		{%for show in artist.past_shows %}
 		<div class="col-sm-4">
-			<div class="tile tile-show">
+
+			<!-- old style -->
+			<!-- <div class="tile tile-show">
 				<img src="{{ show.venue_image_link }}" alt="Show Venue Image" />
 				<h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
 				<h6>{{ show.start_time|datetime('full') }}</h6>
+			</div> -->
+
+
+			<!-- new style -->
+			<div class="tile tile-show">
+				<img src="{{ show.venue_image_link }}" alt="Show Venue Image" />
+				<div class="text-left">
+					<h4>
+						<strong>Venue : </strong>
+						<a href="/venues/{{ show.venue_id }}">
+							{{ show.venue_name }}
+						</a>
+					</h4>
+					<h5>
+						<strong>
+							Date :
+						</strong>
+						{{ show.start_time|datetime('full') }}</h5>
+				</div>
 			</div>
 		</div>
 		{% endfor %}

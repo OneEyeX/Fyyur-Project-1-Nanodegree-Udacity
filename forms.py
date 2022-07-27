@@ -18,6 +18,7 @@ from wtforms.validators import (
     DataRequired,
 )
 import re
+import enum
 
 # choices boxes
 states_choices = [
@@ -73,6 +74,7 @@ states_choices = [
     ("WI", "WI"),
     ("WY", "WY"),
 ]
+
 genres_choices = [
     ("Alternative", "Alternative"),
     ("Blues", "Blues"),
@@ -97,11 +99,19 @@ genres_choices = [
 
 
 def get_list_values(list):
-    l = []
+
+    """
+    a function that gets choices values
+    for example for ("choice", "value")
+    it return a list ["value",.. ]
+    ## exapmle
+    #### l=[("example1", "val1"), ("example2", "val2"), ("example3", "val3") ]
+    ### get_list_values(l) return ["val1", "val2", "val3"]
+    """
+    values_list = []
     for items in list:
-        # for item in items:
-        l.append(items[1])
-    return l
+        values_list.append(items[1])
+    return values_list
 
 
 # print(det(states_choices), len(det(states_choices)))
@@ -133,6 +143,9 @@ class ShowForm(FlaskForm):
     )
 
     def validate_start_time(form, start_time):
+        """
+        a Custom validation for checking date format
+        """
         if not re.search(
             r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(start_time)
         ):
@@ -183,10 +196,6 @@ class VenueForm(FlaskForm):
         "genres",
         validators=[
             InputRequired(message="Genres Select field is required"),
-            # AnyOf(genres_choices, "Invalid choice"),
-            # AnyOf(
-            # values=get_list_values(genres_choices), message="Invalid Genres choice"
-            # ),
         ],
         choices=genres_choices,
     )
@@ -207,20 +216,13 @@ class VenueForm(FlaskForm):
 
     seeking_talent = BooleanField("seeking_talent", default=False)
 
-    seeking_description = StringField("seeking_description")
-
-    # def validate_genres(form, genres):
-    # g = list(genres)
-    # print(genres)
-    # for item in get_list_values(genres_choices):
-    # print(item)
-    # if not item in str(genres):
-    # raise ValidationError("Invalid Genres choice")
-    # for genre in g:
-    # print(genre)
-
-    # if not str(genre) in get_list_values(genres_choices):
-    # raise ValidationError("Invalid Genres choice")
+    seeking_description = StringField(
+        "seeking_description",
+        validators=[
+            Optional(strip_whitespace=False),
+            Regexp(r"^\w", message="Description field must be alphanumeric"),
+        ],
+    )
 
 
 class ArtistForm(FlaskForm):
@@ -245,7 +247,9 @@ class ArtistForm(FlaskForm):
     )
     genres = SelectMultipleField(
         "genres",
-        validators=[InputRequired("Select Genres field is required")],
+        validators=[
+            InputRequired("Select Genres field is required"),
+        ],
         choices=genres_choices,
     )
     image_link = StringField(
@@ -274,7 +278,14 @@ class ArtistForm(FlaskForm):
 
     seeking_venue = BooleanField("seeking_venue", default=False)
 
-    seeking_description = StringField("seeking_description")
+    seeking_description = StringField(
+        "seeking_description",
+        validators=[
+            Optional(strip_whitespace=False),
+            Regexp(r"^\w", message="Description field must be alphanumeric"),
+        ],
+    )
+
     # added for CHALLENGE 1
     available = BooleanField("available", default=False)
 
@@ -327,6 +338,9 @@ class SongForm(FlaskForm):
     )
 
     def validate_release_date(form, release_date):
+        """
+        a Custom validation for checking date format
+        """
         if not re.search(
             r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(release_date)
         ) and not re.search(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", str(release_date)):

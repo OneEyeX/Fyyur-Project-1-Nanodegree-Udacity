@@ -56,12 +56,37 @@
     <div class="row">
         {%for show in shows.new_shows %}
         <div class="col-sm-4">
-            <div class="tile tile-show">
+            <!-- <div class="tile tile-show">
                 <img src="{{ show.artist_image_link }}" alt="Artist Image" />
                 <h4>{{ show.start_time|datetime('full') }}</h4>
                 <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
                 <p>playing at</p>
                 <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+            </div> -->
+            <div class="tile tile-show">
+                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+                <div class="text-left">
+                    <h5>
+                        Date :
+                        <strong>
+                            {{ show.start_time|datetime('full') }}
+                        </strong>
+                    </h5>
+                    <h4>
+                        Artist
+                        <strong>
+                            <a href="/artists/{{ show.artist_id }}">
+                                {{ show.artist_name }}
+                            </a>
+                        </strong>
+                    </h4>
+                    <h4>
+                        playing at
+                        <strong>
+                            <a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a>
+                        </strong>
+                    </h4>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -75,12 +100,37 @@
     <div class="row">
         {%for show in shows.past_shows %}
         <div class="col-sm-4">
-            <div class="tile tile-show">
+            <!-- <div class="tile tile-show">
                 <img src="{{ show.artist_image_link }}" alt="Artist Image" />
                 <h4>{{ show.start_time|datetime('full') }}</h4>
                 <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
                 <p>playing at</p>
                 <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+            </div> -->
+            <div class="tile tile-show">
+                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+                <div class="text-left">
+                    <h5>
+                        Date :
+                        <strong>
+                            {{ show.start_time|datetime('full') }}
+                        </strong>
+                    </h5>
+                    <h4>
+                        Artist
+                        <strong>
+                            <a href="/artists/{{ show.artist_id }}">
+                                {{ show.artist_name }}
+                            </a>
+                        </strong>
+                    </h4>
+                    <h4>
+                        played at
+                        <strong>
+                            <a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a>
+                        </strong>
+                    </h4>
+                </div>
             </div>
         </div>
         {% endfor %}

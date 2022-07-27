@@ -47,8 +47,10 @@ migrate = Migrate(app, db)
 # ----------------------------------------------------------------------------#
 
 
-# A custom function to display and show form's error messages
 def form_errors_messages(form):
+    """
+    A custom function to display and show form's error messages
+    """
     # loop through each field in the form to get the fields and the error messages and put them in a different lists
     # list(input_fields) for form fields and list(field_errors) for field errors
     for input_field, field_errors in form.errors.items():
@@ -185,8 +187,13 @@ def search_venues():
     term = request.form.get("search_term")
 
     # query the database
-    # equivalent in SQL = SELECT * FROM venue WHERE name ILIKE(search_term)
     venue_query = Venue.query.filter(Venue.name.ilike("%" + term + "%"))
+    # in raw SQL
+    """
+    SELECT * 
+    FROM venues 
+    WHERE name ILIKE(search_term);
+    """
 
     # to transform the query results into list
     venue_list = list(map(Venue.name_and_id, venue_query))
@@ -214,13 +221,6 @@ def search_shows():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # query the database
-
-    # in SQL :
-    # SELECT *
-    # FROM show JOIN artist on show.artist_id=artist.id JOIN venues ON shows.venue_id=venues.id
-    # WHERE artist.name ILIKE(searched_term) and venues.name ILIKE(searched_term)
-    # ORDER BY show.start_time DESC;
-
     # in SQL_Alchemy:
     shows_query = (
         db.session.query(Show)
@@ -234,6 +234,15 @@ def search_shows():
         )
         .order_by(Show.start_time.desc())
     )
+    # in raw SQL :
+    """ 
+    SELECT *
+    FROM show JOIN artist on show.artist_id=artist.id 
+    JOIN venues ON shows.venue_id=venues.id
+    WHERE artist.name ILIKE(searched_term) and venues.name ILIKE(searched_term)
+    ORDER BY show.start_time DESC;
+    """
+
     #
     new_shows = []
     past_shows = []
@@ -344,7 +353,7 @@ def create_venue_submission():
         new_venue.image_link = request.form.get("image_link")
         new_venue.seeking_talent = request.form.get("seeking_talent") == "y"
         new_venue.seeking_description = request.form.get("seeking_description")
-
+        print(new_venue.seeking_description)
         try:
             # add new venue to the database
             Venue.add_to_db(new_venue)
@@ -408,10 +417,14 @@ def artists():
     # TODO: replace with real data returned from querying the database (DONE)
 
     # query the Database to get the list of artists
-    # in raw SQL:
-    # SELECT * FROM artists;
     # in SQL_Alchemy ORM:
     artists = Artist.query.all()
+
+    # in raw SQL:
+    """
+    SELECT *
+    FROM artists;
+    """
 
     if artists:
         return render_template("pages/artists.html", artists=artists)
@@ -434,13 +447,14 @@ def search_artists():
     term = request.form.get("search_term")
 
     # query the database
-    # in raw SQL:
-    # SELECT *
-    # FROM artists
-    # WHERE artists.name ILIKE(searched_term)
-
     # in SQL_Alchemy :
     artists_query = Artist.query.filter(Artist.name.ilike("%" + term + "%"))
+    # in raw SQL:
+    """
+    SELECT *
+    FROM artists
+    WHERE artists.name ILIKE(searched_term)
+    """
 
     # convert query to list
     artists_list = list(map(Artist.name_and_id, artists_query))
@@ -465,11 +479,14 @@ def show_artist(artist_id):
     # TODO: replace with real artist data from the artist table, using artist_id
 
     # Query the database
-    # in raw SQL:
-    # SELECT * FROM artists WHERE id = artist_id;
-
     # in SQL_Alchemy ORM:
     artist = Artist.query.get(artist_id)
+    # in raw SQL:
+    """
+    SELECT *
+    FROM artists
+    WHERE id = artist_id;
+    """
 
     if artist:
         # to get artist's all details and informations in a dictionary
@@ -479,8 +496,6 @@ def show_artist(artist_id):
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # get all the shows that are related to the venue
-        # in SQL
-        # SELECT * FROM shows JOIN artists ON shows.artist_id= artists.id  WHERE artist_id=artist_id;
 
         # in SQL_Alchemy ORM:
         shows_query = (
@@ -495,6 +510,13 @@ def show_artist(artist_id):
         #     .filter(Show.artist_id == artist_id)
         #     .all()
         # )
+
+        # in raw SQL:
+        """
+        SELECT * 
+        FROM shows JOIN artists ON shows.artist_id= artists.id  
+        WHERE artist_id=artist_id;
+        """
 
         if shows_query:
             # initialization of lists of upcoming shows (new_shows) and past shows (past_shows)
@@ -774,10 +796,14 @@ def shows():
     # .order_by(Show.id.desc())
     # .all()
     # )
-    # in SQL :
-    # SELECT *
-    # FROM shows JOIN venues ON shows.venue_id = venues.id JOIN artists ON shows.artist_id=artists.id
-    # ORDER BY shows.id DESC;
+
+    # in raw SQL :
+    """
+    SELECT *
+    FROM shows JOIN venues ON shows.venue_id = venues.id 
+    JOIN artists ON shows.artist_id=artists.id
+    ORDER BY shows.id DESC;
+    """
 
     # to get all details of the queried result (show_query) and return them in a list
     shows = list(map(Show.all_details, shows_query))
@@ -891,40 +917,25 @@ def create_song(artist_id):
         return redirect(url_for("index"))
 
     if form.validate_on_submit():
-        error = False
 
-        # check if artist id exists in the db
-        # artist_id = request.form.get("artist_id")
-        # query the database
-        # artist = Artist.query.get(artist_id)
-
-        # check if artist does not exist in the db
-        # if not artist:
-        # error = True
-        # flash("Artist with ID: " + artist_id + " not found")
-        # print(artist_id)
-        # if there are no inputs errors (error==True)
-
-        if not error:
-            new_song = Song()
-            new_song.artist_id = artist_id
-            # new_song.artist_id = request.form.get("artist_id")
-            new_song.name = request.form.get("song_name")
-            new_song.album_name = request.form.get("album_name")
-            new_song.duration = request.form.get("song_duration")
-            new_song.link = request.form.get("song_link")
-            new_song.release_date = request.form.get("release_date")
-            print(new_song)
-            try:
-                Song.add_to_db(new_song)
-                # on successful db insert, flash success
-                flash("Song was successfully listed!")
-            except:
-                db.session.rollback()
-                flash("An error occurred. Song could not be listed.")
-            finally:
-                db.session.close()
-                return redirect(url_for("show_artist", artist_id=artist_id))
+        new_song = Song()
+        new_song.artist_id = artist_id
+        new_song.name = request.form.get("song_name")
+        new_song.album_name = request.form.get("album_name")
+        new_song.duration = request.form.get("song_duration")
+        new_song.link = request.form.get("song_link")
+        new_song.release_date = request.form.get("release_date")
+        print(new_song)
+        try:
+            Song.add_to_db(new_song)
+            # on successful db insert, flash success
+            flash("Song " + new_song.name + "was successfully listed!")
+        except:
+            db.session.rollback()
+            flash("An error occurred. Song could not be listed.")
+        finally:
+            db.session.close()
+            return redirect(url_for("show_artist", artist_id=artist_id))
 
     # go back to add song page add and display form errors in order to inform the user what errors
     form_errors_messages(form)

@@ -59,7 +59,7 @@ class Venue(db.Model):
             "phone": self.phone,
             "image_link": self.image_link,
             "facebook_link": self.facebook_link,
-            "description": self.seeking_description,
+            "seeking_description": self.seeking_description,
             "website": self.website_link,
             "genres": self.genres,
             "shows": self.shows,
