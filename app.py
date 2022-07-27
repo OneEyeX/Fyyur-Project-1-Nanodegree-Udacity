@@ -88,6 +88,19 @@ def index():
     latest_10_Venues = Venue.query.order_by(Venue.id.desc()).limit(10).all()
     latest_10_Artists = Artist.query.order_by(Artist.id.desc()).limit(10).all()
 
+    # in raw SQL:
+    """
+    SELECT * 
+    FROM venues 
+    ORDER BY venues.id DESC
+    LIMIT 10;
+
+    SELECT * 
+    FROM artists 
+    ORDER BY artists.id DESC
+    LIMIT 10;
+    """
+
     return render_template(
         "pages/home.html",
         latest_10_Venues=latest_10_Venues,
@@ -96,7 +109,7 @@ def index():
 
 
 #  ----------------------------------------------------------------
-#  Venues
+#  All Venues
 #  ----------------------------------------------------------------
 @app.route("/venues")
 def venues():
@@ -188,7 +201,8 @@ def search_venues():
 
     # query the database
     venue_query = Venue.query.filter(Venue.name.ilike("%" + term + "%"))
-    # in raw SQL
+
+    # in raw SQL :
     """
     SELECT * 
     FROM venues 
@@ -210,71 +224,7 @@ def search_venues():
 
 
 #  ----------------------------------------------------------------
-#  Show search
-#  ----------------------------------------------------------------
-@app.route("/shows/search", methods=["POST", "GET"])
-def search_shows():
-
-    term = request.form.get("search_term")
-
-    # get the current time in the format YYYY-MM-DD HH:MM:SS
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # query the database
-    # in SQL_Alchemy:
-    shows_query = (
-        db.session.query(Show)
-        .join(Artist)
-        .join(Venue)
-        .filter(
-            (Artist.name.ilike("%" + str(term) + "%"))
-            | (Venue.name.ilike("%" + str(term) + "%"))
-            # uncomment the line below to add search by date
-            # | (Show.start_time.ilike("%" + str(term) + "%"))
-        )
-        .order_by(Show.start_time.desc())
-    )
-    # in raw SQL :
-    """ 
-    SELECT *
-    FROM show JOIN artist on show.artist_id=artist.id 
-    JOIN venues ON shows.venue_id=venues.id
-    WHERE artist.name ILIKE(searched_term) and venues.name ILIKE(searched_term)
-    ORDER BY show.start_time DESC;
-    """
-
-    #
-    new_shows = []
-    past_shows = []
-
-    # loop through the show query to determine new shows and past shows
-    for show in shows_query:
-
-        # comparing show start time with current time to
-        # determine new and past shows
-        if str(show.start_time) > current_time:
-            new_shows.append(Show.all_details(show))
-        else:
-            past_shows.append(Show.all_details(show))
-
-    results = {
-        "count": len(past_shows + new_shows),
-        "past_shows_count": len(past_shows),
-        "past_shows": past_shows,
-        "new_shows_count": len(new_shows),
-        "new_shows": new_shows,
-    }
-
-    flash("number of results " + str(len(past_shows + new_shows)) + " shows")
-    return render_template(
-        "pages/show.html",
-        shows=results,
-        search_term=request.form.get("search_term"),
-    )
-
-
-#  ----------------------------------------------------------------
-#  Display venue page with venue informations
+#  Display Venue page with Venue's informations
 #  ----------------------------------------------------------------
 @app.route("/venues/<int:venue_id>")
 def show_venue(venue_id):
@@ -449,6 +399,7 @@ def search_artists():
     # query the database
     # in SQL_Alchemy :
     artists_query = Artist.query.filter(Artist.name.ilike("%" + term + "%"))
+
     # in raw SQL:
     """
     SELECT *
@@ -471,7 +422,7 @@ def search_artists():
 
 
 #  ----------------------------------------------------------------
-#  Show a Artist profile
+#  Artist profile page
 #  ----------------------------------------------------------------
 @app.route("/artists/<int:artist_id>")
 def show_artist(artist_id):
@@ -481,6 +432,7 @@ def show_artist(artist_id):
     # Query the database
     # in SQL_Alchemy ORM:
     artist = Artist.query.get(artist_id)
+
     # in raw SQL:
     """
     SELECT *
@@ -655,7 +607,7 @@ def edit_artist_submission(artist_id):
 
 
 #  ----------------------------------------------------------------
-#  Update venue informations
+#  Update Venue informations
 #  ----------------------------------------------------------------
 @app.route("/venues/<int:venue_id>/edit", methods=["GET"])
 def edit_venue(venue_id):
@@ -816,7 +768,7 @@ def shows():
 
 
 #  ----------------------------------------------------------------
-# create a Show
+#  Create a Show
 #  ----------------------------------------------------------------
 @app.route("/shows/create")
 def create_shows():
@@ -863,6 +815,16 @@ def create_show_submission():
             Show.artist_id == artist_id, Show.start_time == start_time
         ).first()
 
+        # in raw SQL :
+        """
+        SELECT * 
+        FROM shows 
+        WHERE shows.artist_id = artist_id 
+        AND Show.start_time = start_time
+        LIMIT 1;
+        """
+
+        # if artist has a programmed show in that day
         if shows_artist:
             error = True
             flash(
@@ -871,6 +833,7 @@ def create_show_submission():
                 + " already has a schedule in that date, try another date "
             )
 
+        # if artist is not available (the available checkbox is unchecked)
         if artist and not artist.available:
             error = True
             flash(
@@ -880,9 +843,7 @@ def create_show_submission():
         # if there are no inputs errors (error==True)
         if not error:
             new_show = Show()
-            # new_show.venue_id = request.form.get("venue_id")
             new_show.venue_id = venue_id
-            # new_show.artist_id = request.form.get("artist_id")
             new_show.artist_id = artist_id
             new_show.start_time = start_time
 
@@ -906,6 +867,74 @@ def create_show_submission():
 
 
 #  ----------------------------------------------------------------
+#  Show search
+#  ----------------------------------------------------------------
+@app.route("/shows/search", methods=["POST", "GET"])
+def search_shows():
+
+    term = request.form.get("search_term")
+
+    # get the current time in the format YYYY-MM-DD HH:MM:SS
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # query the database
+    # in SQL_Alchemy:
+    shows_query = (
+        db.session.query(Show)
+        .join(Artist)
+        .join(Venue)
+        .filter(
+            (Artist.name.ilike("%" + str(term) + "%"))
+            | (Venue.name.ilike("%" + str(term) + "%"))
+            # uncomment the line below to add search by date
+            # | (Show.start_time.ilike("%" + str(term) + "%"))
+        )
+        .order_by(Show.start_time.desc())
+    )
+
+    # in raw SQL :
+    """ 
+    SELECT *
+    FROM show JOIN artist on show.artist_id=artist.id 
+    JOIN venues ON shows.venue_id=venues.id
+    WHERE artist.name ILIKE(searched_term) and venues.name ILIKE(searched_term)
+    ORDER BY show.start_time DESC;
+    """
+
+    #
+    new_shows = []
+    past_shows = []
+
+    # loop through the show query to determine new shows and past shows
+    for show in shows_query:
+
+        # comparing show start time with current time to
+        # determine new and past shows
+        if str(show.start_time) > current_time:
+            new_shows.append(Show.all_details(show))
+        else:
+            past_shows.append(Show.all_details(show))
+
+    results = {
+        "count": len(past_shows + new_shows),
+        "past_shows_count": len(past_shows),
+        "past_shows": past_shows,
+        "new_shows_count": len(new_shows),
+        "new_shows": new_shows,
+    }
+
+    flash("number of results " + str(len(past_shows + new_shows)) + " shows")
+    return render_template(
+        "pages/show.html",
+        shows=results,
+        search_term=request.form.get("search_term"),
+    )
+
+
+#  ----------------------------------------------------------------
+#  CHALLENGE 3 : Showcase what albums and songs an artist has on the Artist's page
+#  ----------------------------------------------------------------
+#  ----------------------------------------------------------------
 #  Create a Song
 #  ----------------------------------------------------------------
 @app.route("/artist/<artist_id>/song/create", methods=["POST", "GET"])
@@ -917,7 +946,6 @@ def create_song(artist_id):
         return redirect(url_for("index"))
 
     if form.validate_on_submit():
-
         new_song = Song()
         new_song.artist_id = artist_id
         new_song.name = request.form.get("song_name")
@@ -925,7 +953,7 @@ def create_song(artist_id):
         new_song.duration = request.form.get("song_duration")
         new_song.link = request.form.get("song_link")
         new_song.release_date = request.form.get("release_date")
-        print(new_song)
+        # print(new_song)
         try:
             Song.add_to_db(new_song)
             # on successful db insert, flash success

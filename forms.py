@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask_wtf import Form, FlaskForm
+from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
     SelectField,
@@ -18,7 +18,6 @@ from wtforms.validators import (
     DataRequired,
 )
 import re
-import enum
 
 # choices boxes
 states_choices = [
@@ -99,25 +98,31 @@ genres_choices = [
 
 
 def get_list_values(list):
-
     """
     a function that gets choices values
     for example for ("choice", "value")
     it return a list ["value",.. ]
-    ## exapmle
-    #### l=[("example1", "val1"), ("example2", "val2"), ("example3", "val3") ]
-    ### get_list_values(l) return ["val1", "val2", "val3"]
+
+    #### exapmle
+    l=[("example1", "val1"), ("example2", "val2"), ("example3", "val3") ]
+    get_list_values(l) return ["val1", "val2", "val3"]
     """
+
     values_list = []
+    # loop through the items of the given list
     for items in list:
+        # append each item's values to list value_list
         values_list.append(items[1])
     return values_list
 
 
-# print(det(states_choices), len(det(states_choices)))
-# print(get_list_values(genres_choices), len(get_list_values(genres_choices)))
+# ----------------------------------------------------------------------------#
+# Forms.
+# ----------------------------------------------------------------------------#
 
-
+#  ----------------------------------------------------------------
+#  Show Form
+#  ----------------------------------------------------------------
 class ShowForm(FlaskForm):
 
     artist_id = StringField(
@@ -125,6 +130,8 @@ class ShowForm(FlaskForm):
         validators=[
             InputRequired(message="Artist ID field is required"),
             Regexp(r"^\d", message="Artist ID field must be numeric"),
+            # Regexp from Validators is used to make sure that the artist ID field is numeric
+            # \d same as [0-9]
         ],
     )
     venue_id = StringField(
@@ -132,6 +139,7 @@ class ShowForm(FlaskForm):
         validators=[
             InputRequired(message="Venue ID field is required"),
             Regexp(r"^\d", message="Venue ID field must be numeric"),
+            # Regexp from Validators is used to make sure that the venue ID field is numeric
         ],
     )
     start_time = DateTimeField(
@@ -142,9 +150,10 @@ class ShowForm(FlaskForm):
         default=datetime.today(),
     )
 
+    # customized validators
     def validate_start_time(form, start_time):
         """
-        a Custom validation for checking date format
+        a Custom validation for checking date format ( YYYY-MM-DD HH:MM:SS ) using regular expression
         """
         if not re.search(
             r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(start_time)
@@ -152,8 +161,10 @@ class ShowForm(FlaskForm):
             raise ValidationError("Date format must be YYYY-MM-DD HH:MM:SS")
 
 
+#  ----------------------------------------------------------------
+#  Venue Form
+#  ----------------------------------------------------------------
 class VenueForm(FlaskForm):
-    #
 
     name = StringField(
         "name", validators=[InputRequired(message="Name field is required")]
@@ -182,6 +193,8 @@ class VenueForm(FlaskForm):
                 r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$",
                 message="Phone number is not valid, phone format must be xxx-xxx-xxxx",
             ),
+            # Regexp from Validators is used to match phone number pattern which is xxx-xxx-xxxx
+            # all x must be numbers
         ],
     )
     image_link = StringField(
@@ -221,10 +234,15 @@ class VenueForm(FlaskForm):
         validators=[
             Optional(strip_whitespace=False),
             Regexp(r"^\w", message="Description field must be alphanumeric"),
+            # Regexp from Validators is used to make sure that the description field is alphanumeric
+            # \w same as [A-Z a-z 0-9]
         ],
     )
 
 
+#  ----------------------------------------------------------------
+#  Artist Form
+#  ----------------------------------------------------------------
 class ArtistForm(FlaskForm):
     name = StringField("name", validators=[InputRequired("Name field is required")])
     city = StringField("city", validators=[InputRequired("City field is required")])
@@ -235,7 +253,6 @@ class ArtistForm(FlaskForm):
     )
     phone = StringField(
         # TODO implement validation logic for phone
-        # used Regexp from Validators
         "phone",
         validators=[
             InputRequired("Phone field is required"),
@@ -243,6 +260,8 @@ class ArtistForm(FlaskForm):
                 r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$",
                 message="Phone number is not valid, phone format must be xxx-xxx-xxxx",
             ),
+            # Regexp from Validators is used to match phone number pattern which is xxx-xxx-xxxx
+            # all x must be numbers
         ],
     )
     genres = SelectMultipleField(
@@ -283,6 +302,8 @@ class ArtistForm(FlaskForm):
         validators=[
             Optional(strip_whitespace=False),
             Regexp(r"^\w", message="Description field must be alphanumeric"),
+            # Regexp from Validators is used to make sure that the description is alphanumeric
+            #  \w same as [A-Z a-z 0-9]
         ],
     )
 
@@ -305,6 +326,7 @@ class SongForm(FlaskForm):
         validators=[
             InputRequired(message="Song Name field is required"),
             Regexp(r"^\w", message="Song Name field must be alphanumeric"),
+            # Regexp from Validators is used to make sure that the song name is alphanumeric
         ],
     )
     album_name = StringField(
@@ -312,6 +334,7 @@ class SongForm(FlaskForm):
         validators=[
             Optional(strip_whitespace=False),
             Regexp(r"^\w", message="Album Name field must be alphanumeric"),
+            # Regexp from Validators is used to make sure that the album name is alphanumeric
         ],
     )
     song_duration = StringField(
@@ -319,6 +342,8 @@ class SongForm(FlaskForm):
         validators=[
             InputRequired(message="Duration field is required"),
             Regexp(r"^\d", message="Duration field must be numeric"),
+            # Regexp from Validators is used to make sure that the song duration is numeric
+            # \d same as [0-9]+
         ],
     )
     song_link = StringField(

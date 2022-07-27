@@ -32,12 +32,43 @@
 	<h2 class="lead">Recent 10 Listed Venues</h2>
 	<div class="row">
 		{%for venue in latest_10_Venues %}
+		<!-- old style -->
+		<!-- <div class="col-sm-4">
+			<div class="tile tile-show">
+				<div class="text-center">
+					<h4>ID: {{ venue.id }}</h4>
+					<h3><a href="/venues/{{ venue.id }}">{{ venue.name }}</a></h3>
+				</div>
+				<img src="{{ venue.image_link }}" alt="Venue Image" />
+			</div>
+		</div> -->
+
+		<!-- new style -->
 		<div class="col-sm-4">
 			<div class="tile tile-show">
-				<!-- <h3>{{ venue.name }}</h3> -->
-				<h4>ID: {{ venue.id }}</h4>
-				<h3><a href="/venues/{{ venue.id }}">{{ venue.name }}</a></h3>
-				<img src="{{ venue.image_link }}" />
+				<div class="text-left">
+					<h4>
+						<strong>
+							Venue ID :
+						</strong>
+						{{ venue.id }}
+					</h4>
+					<h4>
+						<strong>
+							Name :
+						</strong>
+						{{ venue.name }}
+					</h4>
+					<a class="btn btn-lg btn-block btn-primary" href="/venues/{{ venue.id }}" style="color: #000">
+						Link to
+						<strong>
+							{{venue.name}}
+						</strong>
+						page
+					</a>
+					<hr>
+				</div>
+				<img src="{{ venue.image_link }}" alt="Venue Image" />
 			</div>
 		</div>
 		{% endfor %}
@@ -53,7 +84,8 @@
 	<div class="row">
 		{%for artist in latest_10_Artists %}
 		<div class="col-sm-4">
-			<div class="tile tile-show">
+			<!-- old style -->
+			<!-- <div class="tile tile-show">
 				<img src="{{ artist.image_link }}" />
 				<h4>
 					ID:
@@ -64,6 +96,32 @@
 						{{ artist.name }}
 					</a>
 				</h3>
+			</div> -->
+			<!-- new style -->
+			<div class="tile tile-show">
+				<div class="text-left">
+					<h4>
+						<strong>
+							Artist ID :
+						</strong>
+						{{ artist.id }}
+					</h4>
+					<h4>
+						<strong>
+							Name :
+						</strong>
+						{{ artist.name }}
+					</h4>
+					<a class="btn btn-lg btn-block btn-primary" href="/artists/{{ artist.id }}" style="color: #000">
+						Link to
+						<strong>
+							{{artist.name}}
+						</strong>
+						page
+					</a>
+					<hr>
+				</div>
+				<img src="{{ artist.image_link }}" alt="Artist Image" />
 			</div>
 		</div>
 		{% endfor %}
