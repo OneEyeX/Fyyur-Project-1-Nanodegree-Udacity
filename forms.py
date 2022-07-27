@@ -7,6 +7,7 @@ from wtforms import (
     DateTimeField,
     BooleanField,
     ValidationError,
+    DateField,
 )
 from wtforms.validators import (
     AnyOf,
@@ -14,6 +15,7 @@ from wtforms.validators import (
     Regexp,
     InputRequired,
     Optional,
+    DataRequired,
 )
 import re
 
@@ -132,12 +134,9 @@ class ShowForm(FlaskForm):
 
     def validate_start_time(form, start_time):
         if not re.search(
-            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(
-                start_time)
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(start_time)
         ):
-            raise ValidationError(
-                "Invalid Date format. Date format must be YYYY-MM-DD HH:MM:SS"
-            )
+            raise ValidationError("Date format must be YYYY-MM-DD HH:MM:SS")
 
 
 class VenueForm(FlaskForm):
@@ -167,7 +166,8 @@ class VenueForm(FlaskForm):
         validators=[
             InputRequired(message="Phone field is required"),
             Regexp(
-                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", message="Phone number is not valid, phone format must be xxx-xxx-xxxx"
+                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$",
+                message="Phone number is not valid, phone format must be xxx-xxx-xxxx",
             ),
         ],
     )
@@ -224,10 +224,8 @@ class VenueForm(FlaskForm):
 
 
 class ArtistForm(FlaskForm):
-    name = StringField("name", validators=[
-                       InputRequired("Name field is required")])
-    city = StringField("city", validators=[
-                       InputRequired("City field is required")])
+    name = StringField("name", validators=[InputRequired("Name field is required")])
+    city = StringField("city", validators=[InputRequired("City field is required")])
     state = SelectField(
         "state",
         validators=[InputRequired("Select State field is required")],
@@ -240,7 +238,8 @@ class ArtistForm(FlaskForm):
         validators=[
             InputRequired("Phone field is required"),
             Regexp(
-                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", message="Phone number is not valid, phone format must be xxx-xxx-xxxx"
+                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$",
+                message="Phone number is not valid, phone format must be xxx-xxx-xxxx",
             ),
         ],
     )
@@ -278,3 +277,59 @@ class ArtistForm(FlaskForm):
     seeking_description = StringField("seeking_description")
     # added for CHALLENGE 1
     available = BooleanField("available", default=False)
+
+
+# added for the challenge
+class SongForm(FlaskForm):
+
+    # artist_id = StringField(
+    #     "artist_id",
+    #     validators=[
+    #         DataRequired(message="Artist ID field is required"),
+    #         Regexp(r"^\d", message="Artist ID field must be numeric"),
+    #     ],
+    # )
+    song_name = StringField(
+        "song_name",
+        validators=[
+            InputRequired(message="Song Name field is required"),
+            Regexp(r"^\w", message="Song Name field must be alphanumeric"),
+        ],
+    )
+    album_name = StringField(
+        "album_name",
+        validators=[
+            Optional(strip_whitespace=False),
+            Regexp(r"^\w", message="Album Name field must be alphanumeric"),
+        ],
+    )
+    song_duration = StringField(
+        "song_duration",
+        validators=[
+            InputRequired(message="Duration field is required"),
+            Regexp(r"^\d", message="Duration field must be numeric"),
+        ],
+    )
+    song_link = StringField(
+        "song_link",
+        validators=[
+            Optional(strip_whitespace=False),
+            URL(message="Invalid Song URL"),
+        ],
+    )
+
+    release_date = DateField(
+        "release_date",
+        validators=[
+            InputRequired(message="Release date field is required"),
+        ],
+        default=datetime.today(),
+    )
+
+    def validate_release_date(form, release_date):
+        if not re.search(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(release_date)
+        ) and not re.search(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", str(release_date)):
+            raise ValidationError(
+                "Date format must be YYYY-MM-DD or YYYY-MM-DD HH:MM:SS"
+            )

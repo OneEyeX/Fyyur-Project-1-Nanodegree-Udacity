@@ -8,7 +8,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 DEBUG = True
 
 # Connect to the database
-
+# Done in models.py file
 
 # TODO IMPLEMENT DATABASE URL
 SQLALCHEMY_DATABASE_URI = "postgresql://postgres:oex@localhost:5432/fyyurDb"

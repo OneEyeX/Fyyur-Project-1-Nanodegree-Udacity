@@ -45,9 +45,72 @@
 		<img src="{{ artist.image_link }}" alt="Venue Image" />
 	</div>
 </div>
+
+<!-- added for Challenge 3 -->
 <section>
-	<h2 class="monospace">{{ artist.upcoming_shows_count }} Upcoming
-		{% if artist.upcoming_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
+	<h2 class="monospace"> {{artist.songs_count}}
+		{% if artist.songs_count == 1 %}Song{% else %}Songs{% endif %}
+	</h2>
+	{% if artist.songs%}
+	<div class="row">
+		{%for song in artist.songs %}
+		<div class="col-sm-4">
+			<div class="tile tile-show">
+				<a href="{{ url_for('delete_song', song_id=song.song_id) }}">
+					<button class="btn btn-danger ">
+						Delete Song
+					</button>
+				</a>
+				<hr>
+				<div class="text-left">
+
+					<h4>
+						<strong>
+							Song name :
+						</strong>
+						{{ song.song_name }}
+					</h4>
+					<h4>
+						<strong>
+							Duration :
+						</strong>
+						{{ song.duration }} minutes
+					</h4>
+
+					{% if song.album_name %}
+					<h4>
+						<strong>
+							Album :
+						</strong>
+						{{ song.album_name }}
+					</h4>
+					{% endif %}
+					<h4>
+						<strong>
+							Released date :
+						</strong>
+						{{ song.release_date|datetime('d/M/Y') }}
+					</h4>
+				</div>
+				{% if song.link %}
+				<a href="{{song.link}}" target="_blank">
+					<strong>
+						Link to song
+					</strong>
+				</a>
+				{% endif %}
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %}
+</section>
+
+<section>
+	<h2 class="monospace">
+		{{ artist.upcoming_shows_count }} Upcoming
+		{% if artist.upcoming_shows_count == 1 %}Show{% else %}Shows{% endif %}
+	</h2>
 	<div class="row">
 		{%for show in artist.upcoming_shows %}
 		<div class="col-sm-4">
@@ -60,8 +123,10 @@
 		{% endfor %}
 	</div>
 </section>
+
 <section>
-	<h2 class="monospace">{{ artist.past_shows_count }} Past
+	<h2 class="monospace">
+		{{ artist.past_shows_count }} Past
 		{% if artist.past_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
 	<div class="row">
 		{%for show in artist.past_shows %}
@@ -77,6 +142,8 @@
 </section>
 
 <a href="/artists/{{ artist.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
-<!-- <a href="/artists/{{ artist.id }}/delete"><button class="btn btn-danger btn-lg">Delete</button></a> -->
+<a href="/artists/{{ artist.id }}/delete"><button class="btn btn-danger btn-lg">Delete</button></a>
+<!-- <a href="/song/create"><button class="btn btn-success btn-lg">Add Song</button></a> -->
+<a href="/artist/{{ artist.id }}/song/create"><button class="btn btn-success btn-lg">Add Song</button></a>
 
 {% endblock %}
