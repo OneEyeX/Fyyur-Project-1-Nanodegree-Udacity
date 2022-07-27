@@ -108,8 +108,10 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120), nullable=True)
     website_link = db.Column(db.String())
+
     # CHALLENGE 1: to add availability
     available = db.Column(db.Boolean, default=True)
+
     # relationship Artist-Show
     shows = db.relationship(
         "Show", backref="Artist", cascade="all, delete", lazy="dynamic"

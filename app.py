@@ -1,21 +1,13 @@
 # ----------------------------------------------------------------------------#
 # Imports
 # ----------------------------------------------------------------------------#
-# from sqlalchemy_utils import URLType
 from models import *
-import json
-
-# from re import A
-import time
-from wsgiref.validate import validator
 import dateutil.parser
 import babel
 from flask import (
     Flask,
-    jsonify,
     render_template,
     request,
-    Response,
     flash,
     redirect,
     url_for,
@@ -23,7 +15,6 @@ from flask import (
 from flask_moment import Moment
 import logging
 from logging import Formatter, FileHandler
-import validators
 from forms import *
 from flask_migrate import Migrate
 
@@ -222,7 +213,6 @@ def search_shows():
     # print(len(shows))
 
     # if shows:
-    # flash("number of results " + str(len(shows)) + " shows")
 
     results = {
         "count": len(past_shows + new_shows),
@@ -231,6 +221,8 @@ def search_shows():
         "new_shows_count": len(new_shows),
         "new_shows": new_shows,
     }
+
+    flash("number of results " + str(len(past_shows + new_shows)) + " shows")
     return render_template(
         "pages/show.html",
         shows=results,
@@ -409,7 +401,8 @@ def create_venue_submission():
         try:
             Venue.add_to_db(new_venue)
             # on successful db insert, flash success
-            flash("Venue " + request.form["name"] + " was successfully listed!")
+            flash("Venue " + request.form["name"] +
+                  " was successfully listed!")
         except:
             # TODO: on unsuccessful db insert, flash an error instead.
             # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
@@ -446,7 +439,8 @@ def delete_venue(venue_id):
             flash("Venue " + venue_to_delete.name + " deleted successfully .")
         except:
             db.session.rollback()
-            flash("Error occurred while deleting Venue " + venue_to_delete.name + " .")
+            flash("Error occurred while deleting Venue " +
+                  venue_to_delete.name + " .")
         finally:
             db.session.close()
 
@@ -490,14 +484,14 @@ def search_artists():
     # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
     # search for "band" should return "The Wild Sax Band".
 
-    artist_query = Artist.query.filter(
+    artists_query = Artist.query.filter(
         Artist.name.ilike("%" + request.form["search_term"] + "%")
     )
-    artist_list = list(map(Artist.name_and_id, artist_query))
+    artists_list = list(map(Artist.name_and_id, artists_query))
 
     results = {
-        "count": len(artist_list),
-        "data": artist_list,
+        "count": len(artists_list),
+        "data": artists_list,
     }
     return render_template(
         "pages/search_artists.html",
@@ -524,8 +518,13 @@ def show_artist(artist_id):
             .filter(Show.artist_id == artist_id)
             .all()
         )
-        # shows_query = db.session.query(Show).join(Artist).all()
-        # shows_query = None
+        # or
+        # shows_query = (
+        #     db.session.query(Show).join(
+        #         Artist).filter(Show.artist_id == artist_id).all()
+        # )
+        # or in SQL
+        # SELECT * FROM artists JOIN shows ON artists.id = shows.artist_id WHERE artist_id=someID;
         if shows_query:
             # initialization of lists of upcoming shows (new_shows) and past shows (past_shows)
             new_shows_list = []
@@ -536,10 +535,9 @@ def show_artist(artist_id):
                 # determine new and past shows
                 if str(show.start_time) > current_time:
                     new_shows_list.append(Show.all_details(show))
-                    print(True)
                 else:
-                    print(False)
                     past_shows_list.append(Show.all_details(show))
+
             #
             artist_details["upcoming_shows"] = new_shows_list
             artist_details["upcoming_shows_count"] = len(new_shows_list)
@@ -588,6 +586,7 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
     # TODO: take values from the form submitted, and update existing
     # artist record with ID <artist_id> using the new attributes
+
     form = ArtistForm(request.form)
 
     edit_artist = Artist.query.get(artist_id)
@@ -598,8 +597,10 @@ def edit_artist_submission(artist_id):
             edit_artist.state = request.form.get("state")
             edit_artist.genres = request.form.getlist("genres")
             edit_artist.phone = request.form.get("phone")
-            edit_artist.seeking_venue = request.form.get("seeking_venue") == "y"
-            edit_artist.seeking_description = request.form.get("seeking_description")
+            edit_artist.seeking_venue = request.form.get(
+                "seeking_venue") == "y"
+            edit_artist.seeking_description = request.form.get(
+                "seeking_description")
             edit_artist.facebook_link = request.form.get("facebook_link")
             edit_artist.image_link = request.form.get("image_link")
             edit_artist.website_link = request.form.get("website_link")
@@ -610,7 +611,8 @@ def edit_artist_submission(artist_id):
                 # migrate and update the database
                 Artist.add_to_db(edit_artist)
                 # on successful db update, flash success
-                flash("Artist " + edit_artist.name + " was successfully updated!")
+                flash("Artist " + edit_artist.name +
+                      " was successfully updated!")
             except:
                 # TODO: on unsuccessful db insert, flash an error instead.
                 # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
@@ -664,13 +666,16 @@ def edit_venue_submission(venue_id):
             edit_venue.website_link = request.form.get("website_link")
             edit_venue.facebook_link = request.form.get("facebook_link")
             edit_venue.image_link = request.form.get("image_link")
-            edit_venue.seeking_talent = request.form.get("seeking_talent") == "y"
-            edit_venue.seeking_description = request.form.get("seeking_description")
+            edit_venue.seeking_talent = request.form.get(
+                "seeking_talent") == "y"
+            edit_venue.seeking_description = request.form.get(
+                "seeking_description")
             try:
                 # migrate and update the database
                 Venue.add_to_db(edit_venue)
                 # on successful db update, flash success
-                flash("Venue " + edit_venue.name + " was successfully updated!")
+                flash("Venue " + edit_venue.name +
+                      " was successfully updated!")
             except:
                 # rollback to the previous state
                 db.session.rollback()
@@ -721,19 +726,22 @@ def create_artist_submission():
         new_artist.genres = request.form.getlist("genres")
         new_artist.phone = request.form.get("phone")
         new_artist.seeking_venue = request.form.get("seeking_venue") == "y"
-        new_artist.seeking_description = request.form.get("seeking_description")
+        new_artist.seeking_description = request.form.get(
+            "seeking_description")
         new_artist.facebook_link = request.form.get("facebook_link")
         # print(new_artist.facebook_link)
         new_artist.image_link = request.form.get("image_link")
         new_artist.website_link = request.form.get("website_link")
-        # added for the challenge
+        # added for the challenge 1
         new_artist.available = True
+
         try:
             # to add Artist to database
             Artist.add_to_db(new_artist)
-            # print(new_artist)
+
             # on successful db insert, flash success
-            flash("Artist " + request.form["name"] + " was successfully listed!")
+            flash("Artist " + request.form["name"] +
+                  " was successfully listed!")
         except:
             # TODO: on unsuccessful db insert, flash an error instead.
             # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
@@ -768,7 +776,8 @@ def shows():
     # .all()
     # )
     shows_query = (
-        db.session.query(Show).join(Venue).join(Artist).order_by(Show.id.desc()).all()
+        db.session.query(Show).join(Venue).join(
+            Artist).order_by(Show.id.desc()).all()
     )
     # to get all details of the queried result (show_query) and return them in a list
     shows = list(map(Show.all_details, shows_query))
@@ -802,16 +811,18 @@ def create_show_submission():
         venue = Venue.query.get(venue_id)
 
         error = False
+
         if not artist:
             error = True
             flash("Artist with ID: " + artist_id + " not found")
+
         if not venue:
             error = True
             flash("Venue with ID: " + venue_id + " not found")
 
         # CHallenge 1
         # check if the artist is available or has a programmed show in that day
-        start_time = request.form.get("start_time")
+        # start_time = request.form.get("start_time")
         # convert time to format Y-m-d H:M:S
         start_time = datetime.strptime(
             str(request.form.get("start_time")), "%Y-%m-%d %H:%M:%S"
@@ -819,11 +830,6 @@ def create_show_submission():
         shows_artist = Show.query.filter(
             Show.artist_id == artist_id, Show.start_time == start_time
         ).first()
-        if artist and not artist.available:
-            error = True
-            flash(
-                "Artist with ID: " + str(artist.id) + " is not available for booking "
-            )
 
         if shows_artist:
             error = True
@@ -831,6 +837,13 @@ def create_show_submission():
                 "Artist with ID: "
                 + str(artist.id)
                 + " already have a schedule in that date, try another date "
+            )
+
+        if artist and not artist.available:
+            error = True
+            flash(
+                "Artist with ID: " + str(artist.id) +
+                " is not available for booking "
             )
 
         # if there are no inputs errors (error==True)
@@ -881,7 +894,8 @@ def server_error(error):
 if not app.debug:
     file_handler = FileHandler("error.log")
     file_handler.setFormatter(
-        Formatter("%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]")
+        Formatter(
+            "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]")
     )
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)

@@ -132,7 +132,8 @@ class ShowForm(FlaskForm):
 
     def validate_start_time(form, start_time):
         if not re.search(
-            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(start_time)
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", str(
+                start_time)
         ):
             raise ValidationError(
                 "Invalid Date format. Date format must be YYYY-MM-DD HH:MM:SS"
@@ -166,7 +167,7 @@ class VenueForm(FlaskForm):
         validators=[
             InputRequired(message="Phone field is required"),
             Regexp(
-                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", message="Phone number is not valid"
+                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", message="Phone number is not valid, phone format must be xxx-xxx-xxxx"
             ),
         ],
     )
@@ -223,8 +224,10 @@ class VenueForm(FlaskForm):
 
 
 class ArtistForm(FlaskForm):
-    name = StringField("name", validators=[InputRequired("Name field is required")])
-    city = StringField("city", validators=[InputRequired("City field is required")])
+    name = StringField("name", validators=[
+                       InputRequired("Name field is required")])
+    city = StringField("city", validators=[
+                       InputRequired("City field is required")])
     state = SelectField(
         "state",
         validators=[InputRequired("Select State field is required")],
@@ -237,7 +240,7 @@ class ArtistForm(FlaskForm):
         validators=[
             InputRequired("Phone field is required"),
             Regexp(
-                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", message="Phone number is not valid"
+                r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", message="Phone number is not valid, phone format must be xxx-xxx-xxxx"
             ),
         ],
     )
