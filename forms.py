@@ -19,7 +19,6 @@ from wtforms.validators import (
 )
 import re
 
-import models
 
 # choices boxes
 states_choices = [

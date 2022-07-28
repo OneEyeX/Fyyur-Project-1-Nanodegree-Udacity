@@ -27,26 +27,16 @@
 	</div>
 </div>
 
-<!-- CHALLENGE 2 -->
-<!-- section of latest 10 Venues -->
+<!-- CHALLENGE 2 : Show Recent Listed Artists and Recently Listed Venues on the homepage, 
+	returning results for Artists and Venues sorting by newly created. 
+	Limit to the 10 most recently listed items. -->
 
+<!-- section of latest 10 Venues -->
 {% if latest_10_Venues %}
 <section>
 	<h2 class="lead">Recent 10 Listed Venues</h2>
 	<div class="row">
 		{%for venue in latest_10_Venues %}
-		<!-- old style -->
-		<!-- <div class="col-sm-4">
-			<div class="tile tile-show">
-				<div class="text-center">
-					<h4>ID: {{ venue.id }}</h4>
-					<h3><a href="/venues/{{ venue.id }}">{{ venue.name }}</a></h3>
-				</div>
-				<img src="{{ venue.image_link }}" alt="Venue Image" />
-			</div>
-		</div> -->
-
-		<!-- new style -->
 		<div class="col-sm-3" style="border: 1px solid rgba(165, 165, 165, 0.4);padding: 10px;margin: 10px">
 			<div class="  tile-show">
 				<div class="text-left" style="padding: 10px;">
@@ -91,22 +81,6 @@
 	<div class="row">
 		{%for artist in latest_10_Artists %}
 		<div class="col-sm-3" style="border: 1px solid rgba(165, 165, 165, 0.4);padding: 10px;margin: 10px;">
-			<!-- old style -->
-			<!-- <div class="tile tile-show">
-				<img src="{{ artist.image_link }}" />
-				<h4>
-					ID:
-					{{ artist.id }}
-				</h4>
-				<h3>
-					<a href="/artists/{{ artist.id }}">
-						{{ artist.name }}
-					</a>
-				</h3>
-			</div> -->
-
-
-			<!-- new style -->
 			<div class="  tile-show">
 				<div class="text-left" style="padding: 10px;">
 					<h4>
@@ -124,7 +98,7 @@
 						</span>
 					</div>
 				</div>
-				<a class="btn  btn-block btn-primary butt  btn-lg" href="/artist/{{ artist.id }}">
+				<a class="btn  btn-block btn-primary butt  btn-lg" href="/artists/{{ artist.id }}">
 					Link to
 					<strong class=" text-capitalize">
 						{{artist.name}}

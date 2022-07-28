@@ -64,7 +64,7 @@
 						Delete Song
 					</a>
 				</div>
-				<div class="text-left" style="padding: 10px;">
+				<div class="text-left text-capitalize" style="padding: 10px;">
 					<h4>
 						<strong>
 							Song name :
@@ -127,16 +127,21 @@
 				</div>
 				<div class="text-left">
 					<h4>
-						<strong>Venue : </strong>
+						Venue :
 						<a href="/venues/{{ show.venue_id }}">
-							{{ show.venue_name }}
+							<strong>
+								{{ show.venue_name }}
+							</strong>
 						</a>
 					</h4>
-					<h5>
-						<strong>
-							Date :
-						</strong>
-						{{ show.start_time|datetime('full') }}</h5>
+					<div class="h4">
+						Date :
+						<span class="h5">
+							<strong>
+								{{ show.start_time|datetime('full') }}
+							</strong>
+						</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -167,16 +172,21 @@
 				</div>
 				<div class="text-left">
 					<h4>
-						<strong>Venue : </strong>
+						Venue :
 						<a href="/venues/{{ show.venue_id }}">
-							{{ show.venue_name }}
+							<strong>
+								{{ show.venue_name }}
+							</strong>
 						</a>
 					</h4>
-					<h5>
-						<strong>
-							Date :
-						</strong>
-						{{ show.start_time|datetime('full') }}</h5>
+					<div class="h4">
+						Date :
+						<span class="h5">
+							<strong>
+								{{ show.start_time|datetime('full') }}
+							</strong>
+						</span>
+					</div>
 				</div>
 			</div>
 		</div>
