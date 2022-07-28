@@ -1,9 +1,19 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Fyyur | Shows{% endblock %}
 {% block content %}
-<div class="row shows">
+<style>
+    .img-container {
+        height: 150px;
+    }
+
+    .img-container img {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<div class="row">
     {%for show in shows %}
-    <div class="col-sm-4">
+    <div class="col-sm-4" style="padding: 10px;">
         <!-- old style -->
         <!-- <div class="tile tile-show">
             <img src="{{ show.artist_image_link }}" alt="Artist Image" />
@@ -15,29 +25,44 @@
 
         <!-- new style -->
         <div class="tile tile-show">
-            <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+
+            <div class="img-container">
+                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+            </div>
             <div class="text-left">
-                <h5>
+                <div class="h4">
                     Date :
-                    <strong>
-                        {{ show.start_time|datetime('full') }}
-                    </strong>
-                </h5>
+                    <span class="h5">
+                        <strong>
+                            {{ show.start_time|datetime('full') }}
+                        </strong>
+                    </span>
+                </div>
+
                 <h4>
                     Artist
-                    <strong>
-                        <a href="/artists/{{ show.artist_id }}">
+                    <a href="/artists/{{ show.artist_id }}">
+                        <strong class=" text-capitalize">
                             {{ show.artist_name }}
-                        </a>
-                    </strong>
+                        </strong>
+                    </a>
                 </h4>
                 <h4>
+                    {% if current_time >= show.start_time %}
+                    played at
+                    {% else %}
                     playing at
-                    <strong>
-                        <a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a>
-                    </strong>
+                    {% endif %}
+                    <a href="/venues/{{ show.venue_id }}">
+                        <strong class=" text-capitalize">
+                            {{ show.venue_name }}
+                        </strong>
+                    </a>
                 </h4>
             </div>
+            <a class="btn btn-danger btn-lg " href="{{ url_for('delete_show',show_id=show.id) }}">
+                Delete
+            </a>
         </div>
     </div>
     {% endfor %}

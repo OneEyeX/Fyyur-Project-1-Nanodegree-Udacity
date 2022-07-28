@@ -1,6 +1,9 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Fyyur{% endblock %}
 {% block content %}
+<style>
+
+</style>
 <div class="row">
 	<div class="col-sm-6">
 		<h1>Fyyur 🔥</h1>
@@ -44,9 +47,9 @@
 		</div> -->
 
 		<!-- new style -->
-		<div class="col-sm-4">
-			<div class="tile tile-show">
-				<div class="text-left">
+		<div class="col-sm-3" style="border: 1px solid rgba(165, 165, 165, 0.4);padding: 10px;margin: 10px">
+			<div class="  tile-show">
+				<div class="text-left" style="padding: 10px;">
 					<h4>
 						<strong>
 							Venue ID :
@@ -57,18 +60,22 @@
 						<strong>
 							Name :
 						</strong>
-						{{ venue.name }}
+						<span class=" text-capitalize">
+							{{ venue.name }}
+						</span>
 					</h4>
-					<a class="btn btn-lg btn-block btn-primary" href="/venues/{{ venue.id }}" style="color: #000">
-						Link to
-						<strong>
-							{{venue.name}}
-						</strong>
-						page
-					</a>
-					<hr>
 				</div>
-				<img src="{{ venue.image_link }}" alt="Venue Image" />
+				<a class="btn btn-lg btn-block btn-primary butt " href="/venues/{{ venue.id }}">
+					Link to
+					<strong class=" text-capitalize">
+						{{venue.name}}
+					</strong>
+					page
+				</a>
+				<br>
+				<div class="img-container">
+					<img class="img-responsive" src="{{ venue.image_link }}" alt="Venue Image" />
+				</div>
 			</div>
 		</div>
 		{% endfor %}
@@ -83,7 +90,7 @@
 	<h2 class="lead">Recent 10 Listed Artists</h2>
 	<div class="row">
 		{%for artist in latest_10_Artists %}
-		<div class="col-sm-4">
+		<div class="col-sm-3" style="border: 1px solid rgba(165, 165, 165, 0.4);padding: 10px;margin: 10px;">
 			<!-- old style -->
 			<!-- <div class="tile tile-show">
 				<img src="{{ artist.image_link }}" />
@@ -97,31 +104,37 @@
 					</a>
 				</h3>
 			</div> -->
+
+
 			<!-- new style -->
-			<div class="tile tile-show">
-				<div class="text-left">
+			<div class="  tile-show">
+				<div class="text-left" style="padding: 10px;">
 					<h4>
 						<strong>
 							Artist ID :
 						</strong>
 						{{ artist.id }}
 					</h4>
-					<h4>
+					<div class=" h4">
 						<strong>
 							Name :
 						</strong>
-						{{ artist.name }}
-					</h4>
-					<a class="btn btn-lg btn-block btn-primary" href="/artists/{{ artist.id }}" style="color: #000">
-						Link to
-						<strong>
-							{{artist.name}}
-						</strong>
-						page
-					</a>
-					<hr>
+						<span class="text-capitalize">
+							{{ artist.name }}
+						</span>
+					</div>
 				</div>
-				<img src="{{ artist.image_link }}" alt="Artist Image" />
+				<a class="btn  btn-block btn-primary butt  btn-lg" href="/artist/{{ artist.id }}">
+					Link to
+					<strong class=" text-capitalize">
+						{{artist.name}}
+					</strong>
+					page
+				</a>
+				<br>
+				<div class="img-container">
+					<img class="img-responsive" src="{{ artist.image_link }}" alt="Artist Image" />
+				</div>
 			</div>
 		</div>
 		{% endfor %}

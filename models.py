@@ -27,19 +27,23 @@ class Venue(db.Model):
     __tablename__ = "venues"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, unique=True)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
+    phone = db.Column(db.String(120), unique=True)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
     website_link = db.Column(db.String(120))
-    genres = db.Column(ARRAY(String))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
+    genres = db.Column(ARRAY(String))
+    # i used the ARRAY type from sqlalchemy to be able to save multiple String in the database
+    # this type only works with PostgreSQL database
+    # here the docs: https://docs.sqlalchemy.org/en/14/core/type_basics.html#sqlalchemy.types.ARRAY
 
     # relationship Venue-Show
     shows = db.relationship(
@@ -101,31 +105,38 @@ class Artist(db.Model):
     __tablename__ = "artists"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, unique=True)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
+    phone = db.Column(db.String(120), unique=True)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     # missing fileds
     # https://docs.sqlalchemy.org/en/14/core/type_basics.html#sqlalchemy.types.ARRAY
-    genres = db.Column(ARRAY(String))
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120), nullable=True)
     website_link = db.Column(db.String())
+    genres = db.Column(ARRAY(String))
 
-    # CHALLENGE 1: to add availability
+    # CHALLENGE 1: to add availability for booking
     available = db.Column(db.Boolean, default=True)
+    # default value is True, if this value is False booking functionality is disabled
 
     # relationship Artist-Show
     shows = db.relationship(
         "Show", backref="Artist", cascade="all, delete", lazy="dynamic"
     )
+
+    # CHALLENGE 3 : Showcase what albums and songs an artist has on the Artist's page
     # relationship Artist-Songs
     songs = db.relationship(
         "Song", backref="Artist", cascade="all, delete", lazy="dynamic"
     )
+
+    #  ----------------------------------------------------------------
+    #  Methods
+    #  ----------------------------------------------------------------
 
     def __repr__(self):
         return f"<Artist ID:{self.id} name:{self.name}>"
@@ -212,11 +223,13 @@ class Show(db.Model):
         and return them in a dictionary
         """
         dictionary = {
+            "id": self.id,
             "venue_id": self.venue_id,
             "venue_name": self.Venue.name,
             "artist_id": self.artist_id,
             "artist_name": self.Artist.name,
             "artist_image_link": self.Artist.image_link,
+            "venue_image_link": self.Venue.image_link,
             "start_time": str(self.start_time),
         }
         return dictionary

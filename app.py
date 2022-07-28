@@ -120,18 +120,23 @@ def venues():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     #  get all the venues grouped by venue id , state and city
-    venues = Venue.query.group_by(Venue.id, Venue.state, Venue.city).all()
-
-    # initialization of parameters
-    # used to group venues state and city
-    venue_state_and_city = []
-    # final result that will be passed to the frontend
-    data = []
+    venues = Venue.query.group_by(Venue.state, Venue.city, Venue.id).all()
+    # in raw SQL:
+    """
+    SELECT * 
+    FROM venues
+    GROUP BY venue.state,venue.city,venues.id;
+    """
 
     if venues:
+        # initialization of parameters
+        # add city and state to a list  to group venues state and city
+        venue_state_and_city = []
+        # final result that will be passed to the frontend
+        final_results = []
+
         # loop through venues to check for upcoming shows, city, states and venue information
         for venue in venues:
-
             # get all shows of the venue
             all_shows = venue.shows.all()
 
@@ -150,14 +155,13 @@ def venues():
                 else:
                     past_shows.append(show)
 
-            # to group venues by state and city
+            # to display venues grouped by state and city i used a hacky way , explained below
             # if the state and city exist in the venue_state_list
             # the venue will be added to data in the index of the state_and_city list
-            if venue.city + venue.state in venue_state_and_city:
-
-                data[venue_state_and_city.index(venue.city + venue.state)][
-                    "venues"
-                ].append(
+            if venue.city + " " + venue.state in venue_state_and_city:
+                final_results[
+                    venue_state_and_city.index(venue.city + " " + venue.state)
+                ]["venues"].append(
                     {
                         "id": venue.id,
                         "name": venue.name,
@@ -166,9 +170,9 @@ def venues():
                 )
             else:
                 # if not the state and city will be added to the state_and_city list (to use it for testing later),
-                venue_state_and_city.append(venue.city + venue.state)
-                # the city, the state and the venue will be added to the data
-                data.append(
+                venue_state_and_city.append(venue.city + " " + venue.state)
+                # the city, the state and the venue will be added to the final result
+                final_results.append(
                     {
                         "city": venue.city,
                         "state": venue.state,
@@ -181,7 +185,7 @@ def venues():
                         ],
                     }
                 )
-        return render_template("pages/venues.html", areas=data)
+        return render_template("pages/venues.html", areas=final_results)
     # if there are no venues
     flash("There is no Venues")
     return render_template("errors/404.html")
@@ -201,7 +205,7 @@ def search_venues():
 
     # query the database
     venue_query = Venue.query.filter(Venue.name.ilike("%" + term + "%"))
-
+    # ilike is used to make the search case insensitive
     # in raw SQL :
     """
     SELECT * 
@@ -212,6 +216,7 @@ def search_venues():
     # to transform the query results into list
     venue_list = list(map(Venue.name_and_id, venue_query))
 
+    # final result
     response = {
         "count": len(venue_list),
         "data": venue_list,
@@ -242,29 +247,34 @@ def show_venue(venue_id):
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # get all the shows that are related to the venue
-        shows_query = (
-            Show.query.options(db.joinedload(Show.Venue))
-            .filter(Show.venue_id == venue_id)
-            .all()
-        )
-        # initialization of lists of upcoming shows (new_shows) and past shows (past_shows)
-        new_shows = []
-        past_shows = []
-        #
-        for show in shows_query:
+        shows_query = Show.query.filter(Show.venue_id == venue_id).all()
+        # or also
+        # shows_query = db.session.query(Show).filter(Show.venue_id == venue_id).all()
+        # in raw SQL:
+        """
+        SELECT * 
+        FROM shows 
+        WHERE shows.venue_id= venue_id;
+        """
+        # if there are shows
+        if shows_query:
+            # initialization of lists of upcoming shows (new_shows) and past shows (past_shows)
+            new_shows = []
+            past_shows = []
+            #
+            for show in shows_query:
+                # comparing show start time with current time to
+                # determine new and past shows
+                if str(show.start_time) > current_time:
+                    new_shows.append(Show.all_details(show))
+                else:
+                    past_shows.append(Show.all_details(show))
 
-            # comparing show start time with current time to
-            # determine new and past shows
-            if str(show.start_time) > current_time:
-                new_shows.append(Show.all_details(show))
-            else:
-                past_shows.append(Show.all_details(show))
-
-        # adding data to venue dict to pass it to the frontend
-        venue_dict["upcoming_shows"] = new_shows
-        venue_dict["upcoming_shows_count"] = len(new_shows)
-        venue_dict["past_shows"] = past_shows
-        venue_dict["past_shows_count"] = len(past_shows)
+            # adding data to venue dict to pass it to the frontend
+            venue_dict["upcoming_shows"] = new_shows
+            venue_dict["upcoming_shows_count"] = len(new_shows)
+            venue_dict["past_shows"] = past_shows
+            venue_dict["past_shows_count"] = len(past_shows)
 
         # render the template page with the queried data
         return render_template("pages/show_venue.html", venue=venue_dict)
@@ -290,14 +300,28 @@ def create_venue_submission():
 
     form = VenueForm(request.form)
 
-    if form.validate_on_submit():
+    # check if name or phone is already used
+    name = request.form.get("name")
+    phone = request.form.get("phone")
+    query_name = Venue.query.filter(Venue.name == name).first()
+    query_phone = Venue.query.filter(Venue.phone == phone).first()
+
+    error = False
+    if query_name:
+        error = True
+        flash("name already exists in database")
+    if query_phone:
+        error = True
+        flash("phone already exists in database")
+
+    if not error and form.validate_on_submit():
         new_venue = Venue()
-        new_venue.name = request.form.get("name")
+        new_venue.name = name
         new_venue.genres = request.form.getlist("genres")
         new_venue.address = request.form.get("address")
         new_venue.city = request.form.get("city")
         new_venue.state = request.form.get("state")
-        new_venue.phone = request.form.get("phone")
+        new_venue.phone = phone
         new_venue.website_link = request.form.get("website_link")
         new_venue.facebook_link = request.form.get("facebook_link")
         new_venue.image_link = request.form.get("image_link")
@@ -450,23 +474,14 @@ def show_artist(artist_id):
         # get all the shows that are related to the venue
 
         # in SQL_Alchemy ORM:
-        shows_query = (
-            db.session.query(Show)
-            .join(Artist)
-            .filter(Show.artist_id == artist_id)
-            .all()
-        )
+        shows_query = Show.query.filter(Show.artist_id == artist_id).all()
         # or also
-        # shows_query = (
-        #     Show.query.options(db.joinedload(Show.Artist))
-        #     .filter(Show.artist_id == artist_id)
-        #     .all()
-        # )
+        # shows_query = db.session.query(Show).filter(Show.artist_id == artist_id).all()
 
         # in raw SQL:
         """
         SELECT * 
-        FROM shows JOIN artists ON shows.artist_id= artists.id  
+        FROM shows  
         WHERE artist_id=artist_id;
         """
 
@@ -492,18 +507,31 @@ def show_artist(artist_id):
 
         # Challenge 3 :Showcase what albums and songs an artist has on the Artist's page.
         songs_query = (
-            db.session.query(Song)
-            .join(Artist)
-            .filter(Song.artist_id == artist_id)
+            Song.query.filter(Song.artist_id == artist_id)
             .order_by(Song.release_date.desc())
             .all()
         )
-        # get the songs all details and informations in a list
-        songs_list = list(map(Song.all_details, songs_query))
+        # or also
+        # songs_query = (
+        #     db.session.query(Song)
+        #     .filter(Song.artist_id == artist_id)
+        #     .order_by(Song.release_date.desc())
+        #     .all()
+        # )
+        # in raw SQL:
+        """
+        SELECT *
+        FROM songs
+        WHERE songs.artist_id= artist_id
+        ORDER BY songs.release_date DESC;
+        """
+        if songs_query:
+            # get the songs all details and informations in a list
+            songs_list = list(map(Song.all_details, songs_query))
 
-        # add the songs to the artist details dictionary
-        artist_details["songs_count"] = len(songs_list)
-        artist_details["songs"] = songs_list
+            # add the songs to the artist details dictionary
+            artist_details["songs_count"] = len(songs_list)
+            artist_details["songs"] = songs_list
 
         return render_template("pages/show_artist.html", artist=artist_details)
     # else show message
@@ -566,12 +594,30 @@ def edit_artist_submission(artist_id):
 
     edit_artist = Artist.query.get(artist_id)
     if edit_artist:
-        if form.validate_on_submit():
-            edit_artist.name = request.form.get("name")
+
+        # check name and phone unicity
+        name = request.form.get("name")
+        phone = request.form.get("phone")
+        query_name = Artist.query.filter(
+            Artist.name == name, Artist.id != artist_id
+        ).first()
+        query_phone = Artist.query.filter(
+            Artist.phone == phone, Artist.id != artist_id
+        ).first()
+        error = False
+        if query_name:
+            error = True
+            flash("Name already exists in database, try another")
+        if query_phone:
+            error = True
+            flash("Phone already exists in database, try another")
+
+        if not error and form.validate_on_submit():
+            edit_artist.name = name
             edit_artist.city = request.form.get("city")
             edit_artist.state = request.form.get("state")
             edit_artist.genres = request.form.getlist("genres")
-            edit_artist.phone = request.form.get("phone")
+            edit_artist.phone = phone
             edit_artist.seeking_venue = request.form.get("seeking_venue") == "y"
             edit_artist.seeking_description = request.form.get("seeking_description")
             edit_artist.facebook_link = request.form.get("facebook_link")
@@ -631,13 +677,31 @@ def edit_venue_submission(venue_id):
     form = VenueForm(request.form)
     edit_venue = Venue.query.get(venue_id)
     if edit_venue:
-        if form.validate_on_submit():
-            edit_venue.name = request.form.get("name")
+
+        # check name and phone unicity
+        name = request.form.get("name")
+        phone = request.form.get("phone")
+        query_name = Venue.query.filter(
+            Venue.name == name, Venue.id != venue_id
+        ).first()
+        query_phone = Venue.query.filter(
+            Venue.phone == phone, Venue.id != venue_id
+        ).first()
+        error = False
+        if query_name:
+            error = True
+            flash("Name already exists in database, try another")
+        if query_phone:
+            error = True
+            flash("Phone already exists in database, try another")
+
+        if not error and form.validate_on_submit():
+            edit_venue.name = name
             edit_venue.genres = request.form.getlist("genres")
             edit_venue.address = request.form.get("address")
             edit_venue.city = request.form.get("city")
             edit_venue.state = request.form.get("state")
-            edit_venue.phone = request.form.get("phone")
+            edit_venue.phone = phone
             edit_venue.website_link = request.form.get("website_link")
             edit_venue.facebook_link = request.form.get("facebook_link")
             edit_venue.image_link = request.form.get("image_link")
@@ -688,30 +752,40 @@ def create_artist_submission():
     # TODO: modify data to be the data object returned from db insertion
 
     form = ArtistForm(request.form)
+    name = request.form.get("name")
+    phone = request.form.get("phone")
+    query_name = Artist.query.filter(Artist.name == name).first()
+    query_phone = Artist.query.filter(Artist.phone == phone).first()
+    error = False
+    if query_name:
+        error = True
+        flash("Name already exists in database, try another")
+    if query_phone:
+        error = True
+        flash("Phone already exists in database, try another")
 
-    if form.validate_on_submit():
+    if not error and form.validate_on_submit():
         new_artist = Artist()
-        new_artist.name = request.form.get("name")
+        new_artist.name = name
         new_artist.city = request.form.get("city")
         new_artist.state = request.form.get("state")
         new_artist.genres = request.form.getlist("genres")
-        new_artist.phone = request.form.get("phone")
+        new_artist.phone = phone
         new_artist.seeking_venue = request.form.get("seeking_venue") == "y"
         new_artist.seeking_description = request.form.get("seeking_description")
         new_artist.facebook_link = request.form.get("facebook_link")
-        # print(new_artist.facebook_link)
         new_artist.image_link = request.form.get("image_link")
         new_artist.website_link = request.form.get("website_link")
 
         # added for the challenge 1
+        # by default is True but it can be changed from edit artist
         new_artist.available = True
 
         try:
             # to add Artist to database
             Artist.add_to_db(new_artist)
-
             # on successful db insert, flash success
-            flash("Artist " + request.form["name"] + " was successfully listed!")
+            flash("Artist " + new_artist.name + " was successfully listed!")
         except:
             # TODO: on unsuccessful db insert, flash an error instead.
             # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
@@ -727,8 +801,6 @@ def create_artist_submission():
     form_errors_messages(form)
     return render_template("forms/new_artist.html", form=ArtistForm(request.form))
 
-    # return render_template("pages/home.html")
-
 
 #  ----------------------------------------------------------------
 #  Shows
@@ -739,21 +811,13 @@ def shows():
     # TODO: replace with real venues data.
 
     # querying the database
-    shows_query = (
-        db.session.query(Show).join(Venue).join(Artist).order_by(Show.id.desc()).all()
-    )
+    shows_query = Show.query.order_by(Show.id.desc()).all()
     # OR
-    # shows_query = (
-    # Show.query.options(db.joinedload(Show.Venue), db.joinedload(Show.Artist))
-    # .order_by(Show.id.desc())
-    # .all()
-    # )
-
+    # shows_query = db.session.query(Show).order_by(Show.id.desc()).all()
     # in raw SQL :
     """
     SELECT *
-    FROM shows JOIN venues ON shows.venue_id = venues.id 
-    JOIN artists ON shows.artist_id=artists.id
+    FROM shows 
     ORDER BY shows.id DESC;
     """
 
@@ -761,7 +825,13 @@ def shows():
     shows = list(map(Show.all_details, shows_query))
 
     if shows:
-        return render_template("pages/shows.html", shows=shows)
+        # get the current time and pass it to the frontend to use it for personalizing
+        # displayed message like if show time is lesser than current time the message will be played else it will be playing
+        # check the shows template for more details ( pages/shows.html )
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return render_template(
+            "pages/shows.html", shows=shows, current_time=current_time
+        )
     # render error template if there is no show
     flash("There is no Shows")
     return render_template("errors/404.html")
@@ -874,9 +944,6 @@ def search_shows():
 
     term = request.form.get("search_term")
 
-    # get the current time in the format YYYY-MM-DD HH:MM:SS
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     # query the database
     # in SQL_Alchemy:
     shows_query = (
@@ -901,19 +968,22 @@ def search_shows():
     ORDER BY show.start_time DESC;
     """
 
-    #
-    new_shows = []
     past_shows = []
+    new_shows = []
+    # if there are shows
+    # divide shows in new and past shows lists
+    if shows_query:
+        # get the current time in the format YYYY-MM-DD HH:MM:SS
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # loop through the show query to determine new shows and past shows
-    for show in shows_query:
-
-        # comparing show start time with current time to
-        # determine new and past shows
-        if str(show.start_time) > current_time:
-            new_shows.append(Show.all_details(show))
-        else:
-            past_shows.append(Show.all_details(show))
+        # loop through the show query to determine new shows and past shows
+        for show in shows_query:
+            # comparing show start time with current time to
+            # determine new and past shows
+            if str(show.start_time) > current_time:
+                new_shows.append(Show.all_details(show))
+            else:
+                past_shows.append(Show.all_details(show))
 
     results = {
         "count": len(past_shows + new_shows),
@@ -953,10 +1023,9 @@ def create_song(artist_id):
         new_song.duration = request.form.get("song_duration")
         new_song.link = request.form.get("song_link")
         new_song.release_date = request.form.get("release_date")
-        # print(new_song)
+
         try:
             Song.add_to_db(new_song)
-            # on successful db insert, flash success
             flash("Song " + new_song.name + "was successfully listed!")
         except:
             db.session.rollback()
@@ -972,6 +1041,8 @@ def create_song(artist_id):
 
 #  ----------------------------------------------------------------
 #  Delete a Song
+#  OPTION : it's not mentioned in the list of tasks to do
+#  I added it personally as an improvement for the website app
 #  ----------------------------------------------------------------
 @app.route("/song/<song_id>/delete", methods=["GET", "DELETE"])
 def delete_song(song_id):
@@ -991,6 +1062,31 @@ def delete_song(song_id):
         finally:
             db.session.close()
     return redirect(url_for("show_artist", artist_id=song_to_delete.artist_id))
+
+
+#  ----------------------------------------------------------------
+#  Delete a Show
+#  OPTION : it's not mentioned in the list of tasks to do
+#  I added it personally as an improvement for the website app
+#  ----------------------------------------------------------------
+@app.route("/show/<show_id>/delete", methods=["GET", "DELETE"])
+def delete_show(show_id):
+    # to get the show to delete
+    show_to_delete = Show.query.get(show_id)
+
+    if not show_to_delete:
+        flash("Show not found.")
+    else:
+        try:
+            db.session.delete(show_to_delete)
+            db.session.commit()
+            flash("Show deleted successfully.")
+        except:
+            db.session.rollback()
+            flash("Error occurred while deleting the Show.")
+        finally:
+            db.session.close()
+    return redirect(url_for("shows"))
 
 
 @app.errorhandler(404)

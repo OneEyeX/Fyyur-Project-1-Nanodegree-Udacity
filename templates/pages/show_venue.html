@@ -64,19 +64,27 @@
 
 			<!-- New style -->
 			<div class="tile tile-show">
-				<img src="{{ show.artist_image_link }}" alt="Show Artist Image" />
+				<div class="img-container">
+					<img src="{{ show.artist_image_link }}" alt="Show Artist Image" />
+				</div>
+				<br>
 				<div class="text-left">
 					<h4>
-						<strong>Artist : </strong>
+						Artist :
 						<a href="/artists/{{ show.artist_id }}">
-							{{ show.artist_name }}
+							<strong class=" text-capitalize">
+								{{ show.artist_name }}
+							</strong>
 						</a>
 					</h4>
-					<h5>
-						<strong>
-							Date :
-						</strong>
-						{{ show.start_time|datetime('full') }}</h5>
+					<div class="h4">
+						Date :
+						<span class="h5">
+							<strong>
+								{{ show.start_time|datetime('full') }}
+							</strong>
+						</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -100,19 +108,27 @@
 
 			<!-- New style -->
 			<div class="tile tile-show">
-				<img src="{{ show.artist_image_link }}" alt="Show Artist Image" />
+				<div class="img-container">
+					<img src="{{ show.artist_image_link }}" alt="Show Artist Image" />
+				</div>
+				<br>
 				<div class="text-left">
 					<h4>
-						<strong>Artist : </strong>
+						Artist :
 						<a href="/artists/{{ show.artist_id }}">
-							{{ show.artist_name }}
+							<strong class=" text-capitalize">
+								{{ show.artist_name }}
+							</strong>
 						</a>
 					</h4>
-					<h5>
-						<strong>
-							Date :
-						</strong>
-						{{ show.start_time|datetime('full') }}</h5>
+					<div class="h4">
+						Date :
+						<span class="h5">
+							<strong>
+								{{ show.start_time|datetime('full') }}
+							</strong>
+						</span>
+					</div>
 				</div>
 			</div>
 		</div>

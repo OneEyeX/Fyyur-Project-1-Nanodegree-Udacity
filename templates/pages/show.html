@@ -50,28 +50,30 @@
     {% endfor %}
 </div> -->
 
+
+
 {% if shows.new_shows %}
 <section>
     <h2 class="lead">New Shows : ( {{shows.new_shows_count}} results )</h2>
-    <div class="row">
+    <div class="row shows">
         {%for show in shows.new_shows %}
-        <div class="col-sm-4">
-            <!-- <div class="tile tile-show">
-                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
-                <h4>{{ show.start_time|datetime('full') }}</h4>
-                <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
-                <p>playing at</p>
-                <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
-            </div> -->
-            <div class="tile tile-show">
-                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
-                <div class="text-left">
-                    <h5>
+
+        <!-- new style -->
+        <div class="col-sm-4" style="border: 1px solid rgba(165, 165, 165, 0.4);padding: 10px;margin: 10px">
+            <div class="  tile-show">
+                <div class="text-left" style="padding: 10px;">
+                    <h4>
+                        Show ID :
+                        <strong>
+                            {{ show.id }}
+                        </strong>
+                    </h4>
+                    <h4>
                         Date :
                         <strong>
                             {{ show.start_time|datetime('full') }}
                         </strong>
-                    </h5>
+                    </h4>
                     <h4>
                         Artist
                         <strong>
@@ -87,6 +89,11 @@
                         </strong>
                     </h4>
                 </div>
+
+                <br>
+                <div class="img-container">
+                    <img class="img-responsive" src="{{ show.artist_image_link }}" alt="Show Artist Image" />
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -99,23 +106,16 @@
     <h2 class="lead">Past Shows : ( {{shows.past_shows_count}} results )</h2>
     <div class="row">
         {%for show in shows.past_shows %}
-        <div class="col-sm-4">
-            <!-- <div class="tile tile-show">
-                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
-                <h4>{{ show.start_time|datetime('full') }}</h4>
-                <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
-                <p>playing at</p>
-                <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
-            </div> -->
-            <div class="tile tile-show">
-                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
-                <div class="text-left">
-                    <h5>
-                        Date :
+        <div class="col-sm-4" style="border: 1px solid rgba(165, 165, 165, 0.4);padding: 10px;margin: 10px">
+            <div class="  tile-show">
+                <div class="text-left" style="padding: 10px;">
+                    <h4>
+                        Show ID :
                         <strong>
-                            {{ show.start_time|datetime('full') }}
+                            {{ show.id }}
                         </strong>
-                    </h5>
+                    </h4>
+
                     <h4>
                         Artist
                         <strong>
@@ -130,6 +130,19 @@
                             <a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a>
                         </strong>
                     </h4>
+                    <div class="h4">
+                        Date :
+                        <span class="h5">
+                            <strong>
+                                {{ show.start_time|datetime('full') }}
+                            </strong>
+                        </span>
+                    </div>
+                </div>
+
+                <br>
+                <div class="img-container">
+                    <img class="img-responsive" src="{{ show.artist_image_link }}" alt="Show Artist Image" />
                 </div>
             </div>
         </div>
