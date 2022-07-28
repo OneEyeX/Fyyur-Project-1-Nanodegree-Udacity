@@ -247,13 +247,19 @@ def show_venue(venue_id):
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # get all the shows that are related to the venue
-        shows_query = Show.query.filter(Show.venue_id == venue_id).all()
+        shows_query = (
+            db.session.query(Show).join(Venue).filter(Show.venue_id == venue_id).all()
+        )
         # or also
-        # shows_query = db.session.query(Show).filter(Show.venue_id == venue_id).all()
+        # shows_query = (
+        #     Show.query.options(db.joinedload(Show.Venue))
+        #     .filter(Show.venue_id == venue_id)
+        #     .all()
+        # )
         # in raw SQL:
         """
         SELECT * 
-        FROM shows 
+        FROM shows JOIN venues ON shows.venue_id = venues.id
         WHERE shows.venue_id= venue_id;
         """
         # if there are shows
@@ -474,14 +480,22 @@ def show_artist(artist_id):
         # get all the shows that are related to the venue
 
         # in SQL_Alchemy ORM:
-        shows_query = Show.query.filter(Show.artist_id == artist_id).all()
+        shows_query = (
+            db.session.query(Show)
+            .join(Artist)
+            .filter(Show.artist_id == artist_id)
+            .all()
+        )
         # or also
-        # shows_query = db.session.query(Show).filter(Show.artist_id == artist_id).all()
-
+        # shows_query = (
+        #     Show.query.options(db.joinedload(Show.Artist))
+        #     .filter(Show.artist_id == artist_id)
+        #     .all()
+        # )
         # in raw SQL:
         """
         SELECT * 
-        FROM shows  
+        FROM shows JOIN artists ON shows.artist_id= artists.id  
         WHERE artist_id=artist_id;
         """
 
@@ -507,13 +521,15 @@ def show_artist(artist_id):
 
         # Challenge 3 :Showcase what albums and songs an artist has on the Artist's page.
         songs_query = (
-            Song.query.filter(Song.artist_id == artist_id)
+            db.session.query(Song)
+            .join(Artist)
+            .filter(Song.artist_id == artist_id)
             .order_by(Song.release_date.desc())
             .all()
         )
         # or also
         # songs_query = (
-        #     db.session.query(Song)
+        #     Song.query.options(db.joinedload(Song.Artist))
         #     .filter(Song.artist_id == artist_id)
         #     .order_by(Song.release_date.desc())
         #     .all()
@@ -521,7 +537,7 @@ def show_artist(artist_id):
         # in raw SQL:
         """
         SELECT *
-        FROM songs
+        FROM songs JOIN artists ON songs.artist_id = artists.id
         WHERE songs.artist_id= artist_id
         ORDER BY songs.release_date DESC;
         """
@@ -811,13 +827,18 @@ def shows():
     # TODO: replace with real venues data.
 
     # querying the database
-    shows_query = Show.query.order_by(Show.id.desc()).all()
-    # OR
-    # shows_query = db.session.query(Show).order_by(Show.id.desc()).all()
+    shows_query = (
+        db.session.query(Show).join(Venue, Artist).order_by(Show.id.desc()).all()
+    )
+    # or also
+    # shows_query = Show.query.options(
+    # db.joinedload(Show.Venue), db.joinedload(Show.Artist)
+    # ).order_by(Show.id.desc()).all()
     # in raw SQL :
     """
     SELECT *
-    FROM shows 
+    FROM shows JOIN artists ON shows.artist_id= artists.id 
+    JOIN venues ON shows.venue_id = venues.id 
     ORDER BY shows.id DESC;
     """
 
