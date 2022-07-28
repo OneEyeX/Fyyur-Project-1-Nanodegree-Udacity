@@ -244,22 +244,6 @@ class VenueForm(FlaskForm):
         ],
     )
 
-    # # custom validator
-    # def validate_name(form, name):
-    #     """
-    #     a Custom validation to ensure name that name is unique
-    #     """
-    #     venue_query = models.Venue.query.filter(models.Venue.name == name)
-    #     # venue_list = list(map(models.Venue.name_and_id, venue_query))
-    #     venue_list = list(map(models.Venue.name_and_id, venue_query))
-    #     for venue in venue_list:
-    #         print(venue)
-    #         print(len(venue))
-    #         if len(venue_query):
-    #             raise ValidationError(
-    #                 "Name already exists in the Database, try another"
-    #             )
-
 
 #  ----------------------------------------------------------------
 #  Artist Form
@@ -328,29 +312,13 @@ class ArtistForm(FlaskForm):
         ],
     )
 
-    # added for CHALLENGE 1
+    # added for CHALLENGE 1 : availability, so that an artist is only available to be booked at certain dates/times. Disable the ability to create book an artist for a show outside of their availability.
     available = BooleanField("available", default=False)
-
-    # a custom validator
-    # def validate_name(form, name):
-    #     """
-    #     a Custom validation to ensure name that name is unique
-    #     """
-    #     artist_name = models.Artist.query.filter(models.Artist.name == name)
-    #     if artist_name:
-    #         raise ValidationError("Name already exists in the Database, try another")
 
 
 # added for the challenge
 class SongForm(FlaskForm):
 
-    # artist_id = StringField(
-    #     "artist_id",
-    #     validators=[
-    #         DataRequired(message="Artist ID field is required"),
-    #         Regexp(r"^\d", message="Artist ID field must be numeric"),
-    #     ],
-    # )
     song_name = StringField(
         "song_name",
         validators=[
@@ -392,6 +360,7 @@ class SongForm(FlaskForm):
         default=datetime.today(),
     )
 
+    # a custom validation logic for release_date:
     def validate_release_date(form, release_date):
         """
         a Custom validation for checking date format
